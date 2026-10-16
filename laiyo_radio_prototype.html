@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<title>喇易喔電台</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#141f31;--panel2:#1c2a40;--text:#f5f8ff;--muted:#a6b5ca;--cyan:#75dcff;--pink:#ff7f9d}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#14233b 0%,var(--bg) 48%,#111a2b 100%);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;color:var(--text);min-height:100vh}
+main{max-width:560px;margin:auto;padding:20px 16px 36px}
+header{display:flex;align-items:center;gap:13px;margin:4px 0 22px}
+.logo{width:58px;height:58px;border-radius:19px;background:linear-gradient(135deg,#79e0ff,#438bff);display:grid;place-items:center;color:#081426;font-size:29px;box-shadow:0 8px 28px #3c9fff33}
+h1{font-size:25px;margin:0;letter-spacing:.4px} .subtitle{font-size:12px;color:var(--muted);margin-top:3px;letter-spacing:1px}
+.panel{background:#141f31eF;border:1px solid #ffffff12;border-radius:23px;padding:18px;margin:14px 0;box-shadow:0 12px 36px #0002}
+.kicker{font-size:12px;color:var(--cyan);letter-spacing:1.5px;font-weight:700}
+.now-title{font-size:22px;font-weight:750;margin:8px 0 3px;overflow-wrap:anywhere}
+.now-url{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.visual{height:105px;margin:17px 0 13px;border-radius:16px;background:radial-gradient(ellipse at center,#245078 0%,#192c48 52%,#121d30 100%);display:flex;align-items:center;justify-content:center;gap:7px;overflow:hidden}
+.bar{width:5px;border-radius:10px;background:linear-gradient(#83e5ff,#438dff);height:20px;opacity:.9}
+.visual.playing .bar{animation:wave .8s ease-in-out infinite alternate}
+.visual.playing .bar:nth-child(3n){animation-delay:-.3s}.visual.playing .bar:nth-child(2n){animation-delay:-.5s}
+@keyframes wave{to{height:68px}}
+.controls{display:flex;justify-content:center;align-items:center;gap:22px;margin:10px 0}
+button{border:0;border-radius:14px;padding:12px 15px;font-size:14px;font-weight:700;background:var(--panel2);color:var(--text);cursor:pointer}
+button:active{transform:scale(.98)}button:disabled{opacity:.45}
+.play{width:66px;height:66px;border-radius:50%;background:var(--cyan);color:#061324;font-size:24px;box-shadow:0 7px 25px #5edaff25}
+.small-icon{font-size:20px;padding:10px;background:transparent}
+.row{display:flex;gap:9px;align-items:center}.row>*{min-width:0}
+input{width:100%;padding:13px 12px;border-radius:12px;border:1px solid #35445b;background:#0d1727;color:var(--text);font-size:14px;outline:none}
+input:focus{border-color:var(--cyan)}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 7px}
+.primary{background:var(--cyan);color:#071525}.secondary{background:#25364e}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px}.section-head h2{font-size:17px;margin:0}
+.station{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid #ffffff10}
+.station:last-child{border-bottom:0;padding-bottom:0}
+.station-icon{width:42px;height:42px;border-radius:13px;background:#203a56;display:grid;place-items:center;color:var(--cyan);font-size:19px;flex-shrink:0}
+.station-info{flex:1;min-width:0}.station-name{font-weight:700;font-size:14px;overflow-wrap:anywhere}.station-url{font-size:11px;color:var(--muted);overflow-wrap:anywhere;margin-top:3px}
+.station-actions{display:flex;gap:3px;align-items:center}.station-actions button{padding:9px;background:transparent;font-size:18px}
+.fav{color:var(--pink)!important}
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+.timer-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.timer-line select{background:#0d1727;color:var(--text);border:1px solid #35445b;padding:12px;border-radius:12px;flex:1}
+.status{min-height:18px;font-size:12px;color:var(--cyan);margin-top:8px}
+footer{text-align:center;color:#71839b;font-size:11px;padding:10px}
+@media(min-width:480px){main{padding-top:28px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="logo">📻</div>
+  <div><h1>喇易喔電台</h1><div class="subtitle">LAIYO RADIO · 隨時聽好聲音</div></div>
+</header>
+
+<section class="panel">
+  <div class="kicker">NOW PLAYING</div>
+  <div class="now-title" id="nowName">尚未選擇電台</div>
+  <div class="now-url" id="nowUrl">選擇電台後按播放</div>
+  <div class="visual" id="visual" aria-hidden="true"></div>
+  <div class="controls">
+    <button class="small-icon" id="favoriteCurrent" aria-label="收藏目前電台">♡</button>
+    <button class="play" id="playBtn" aria-label="播放或暫停">▶</button>
+    <button class="small-icon" id="stopBtn" aria-label="停止播放">■</button>
+  </div>
+  <div class="status" id="status" role="status">準備就緒</div>
+  <audio id="audio" preload="none" crossorigin="anonymous"></audio>
+  <p class="note">提示：請使用可直接播放的音訊串流網址（例如 HTTPS MP3/AAC 或相容的直播串流）。部分電台會限制外部播放。</p>
+</section>
+
+<section class="panel">
+  <div class="section-head"><h2>我的電台</h2><span class="kicker" id="stationCount">0 STATIONS</span></div>
+  <div id="stations"></div>
+</section>
+
+<section class="panel">
+  <div class="section-head"><h2>新增自訂電台</h2><span>＋</span></div>
+  <form id="addForm">
+    <label for="stationName">電台名稱</label><input id="stationName" placeholder="例如：我的音樂台" maxlength="70" required>
+    <label for="stationUrl">串流網址（需為可播放的音訊網址）</label><input id="stationUrl" type="url" placeholder="https://example.com/radio.mp3" required>
+    <div class="row" style="margin-top:12px"><button class="primary" type="submit" style="flex:1">＋ 新增電台</button></div>
+  </form>
+  <p class="note">請只加入你有權收聽的合法電台串流網址。一般電台首頁網址通常不是音訊串流網址。</p>
+</section>
+
+<section class="panel">
+  <div class="section-head"><h2>睡眠定時</h2><span>☾</span></div>
+  <div class="timer-line">
+    <select id="timerMinutes" aria-label="睡眠定時分鐘數">
+      <option value="0">關閉定時</option><option value="15">15 分鐘</option><option value="30">30 分鐘</option><option value="45">45 分鐘</option><option value="60">60 分鐘</option><option value="90">90 分鐘</option><option value="120">120 分鐘</option>
+    </select>
+    <button class="primary" id="setTimer">開始倒數</button>
+  </div>
+  <div class="status" id="timerStatus">尚未設定睡眠定時</div>
+</section>
+
+<footer>喇易喔電台 · 網頁原型 v0.1<br>此版本為測試原型，尚非正式 Android APK。</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const audio=$('audio');
+const bars=Array.from({length:25},()=>'<span class="bar"></span>').join('');
+$('visual').innerHTML=bars;
+let stations=loadStations();
+let currentId=null, timerId=null, timerEnd=0, tickId=null;
+function loadStations(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('laiyoStations')||'null');
+    if(Array.isArray(saved)) return saved;
+  }catch(e){}
+  return [
+    {id:'demo-cb',name:'中廣音樂網（自訂串流）',url:'',favorite:true,placeholder:true},
+    {id:'demo-custom',name:'新增你喜歡的電台',url:'',favorite:false,placeholder:true}
+  ];
+}
+function save(){localStorage.setItem('laiyoStations',JSON.stringify(stations))}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+  const list=$('stations');list.innerHTML='';
+  $('stationCount').textContent=stations.length+' STATIONS';
+  if(!stations.length){list.innerHTML='<p class="note">還沒有電台，請新增串流網址。</p>';return}
+  stations.forEach(s=>{
+    const item=document.createElement('div');item.className='station';
+    item.innerHTML=`<div class="station-icon">♫</div><div class="station-info"><div class="station-name">${esc(s.name)}</div><div class="station-url">${esc(s.placeholder?'尚未設定串流網址':s.url)}</div></div><div class="station-actions"><button title="播放" aria-label="播放 ${esc(s.name)}">▶</button><button class="${s.favorite?'fav':''}" title="收藏" aria-label="收藏 ${esc(s.name)}">${s.favorite?'♥':'♡'}</button><button title="刪除" aria-label="刪除 ${esc(s.name)}">×</button></div>`;
+    const bs=item.querySelectorAll('button');
+    bs[0].addEventListener('click',()=>selectStation(s.id,true));
+    bs[1].addEventListener('click',()=>{s.favorite=!s.favorite;save();render();if(currentId===s.id)updateFavoriteButton()});
+    bs[2].addEventListener('click',()=>{if(currentId===s.id)stopAudio();stations=stations.filter(x=>x.id!==s.id);save();render()});
+    list.appendChild(item);
+  });
+}
+function current(){return stations.find(s=>s.id===currentId)}
+function setStatus(msg){$('status').textContent=msg}
+function updateFavoriteButton(){const s=current();$('favoriteCurrent').textContent=s&&s.favorite?'♥':'♡';$('favoriteCurrent').classList.toggle('fav',!!(s&&s.favorite))}
+function selectStation(id,autoplay=false){
+  const s=stations.find(x=>x.id===id);if(!s)return;
+  currentId=id;$('nowName').textContent=s.name;$('nowUrl').textContent=s.url||'請先新增有效的串流網址';
+  updateFavoriteButton();render();
+  if(s.placeholder||!s.url){setStatus('這是示範項目，請新增可播放的串流網址。');return}
+  if(autoplay)playAudio(s);
+}
+async function playAudio(s){
+  if(!s)s=current();
+  if(!s){setStatus('請先選擇電台。');return}
+  if(!s.url||s.placeholder){setStatus('這個項目沒有串流網址，請新增有效網址。');return}
+  try{
+    if(audio.src!==s.url){audio.pause();audio.src=s.url;audio.load()}
+    setStatus('正在連線…');
+    await audio.play();
+    $('playBtn').textContent='Ⅱ';$('visual').classList.add('playing');setStatus('播放中：'+s.name);
+  }catch(e){$('playBtn').textContent='▶';$('visual').classList.remove('playing');setStatus('無法播放：請檢查網址、網路或電台是否允許外部串流。')}
+}
+function stopAudio(){audio.pause();audio.removeAttribute('src');audio.load();$('playBtn').textContent='▶';$('visual').classList.remove('playing');setStatus('已停止播放')}
+$('playBtn').addEventListener('click',()=>{if(!audio.paused){audio.pause();$('playBtn').textContent='▶';$('visual').classList.remove('playing');setStatus('已暫停');}else playAudio(current())});
+$('stopBtn').addEventListener('click',stopAudio);
+$('favoriteCurrent').addEventListener('click',()=>{const s=current();if(!s){setStatus('請先選擇電台。');return}s.favorite=!s.favorite;save();render();updateFavoriteButton();setStatus(s.favorite?'已加入我的最愛':'已取消收藏')});
+$('addForm').addEventListener('submit',e=>{
+  e.preventDefault();const name=$('stationName').value.trim(),url=$('stationUrl').value.trim();
+  if(!name||!url)return;
+  try{const parsed=new URL(url);if(!['http:','https:'].includes(parsed.protocol))throw new Error('scheme')}
+  catch(e){setStatus('請輸入有效的 http 或 https 網址。');return}
+  const s={id:'s-'+Date.now()+'-'+Math.random().toString(16).slice(2,6),name,url,favorite:false};
+  stations=stations.filter(x=>!x.placeholder);stations.push(s);save();render();$('addForm').reset();selectStation(s.id,false);setStatus('已新增電台，按播放開始收聽。');
+});
+$('setTimer').addEventListener('click',()=>{
+  clearInterval(tickId);timerId=null;timerEnd=0;
+  const mins=Number($('timerMinutes').value);
+  if(!mins){$('timerStatus').textContent='睡眠定時已關閉';return}
+  timerEnd=Date.now()+mins*60000;
+  function tick(){
+    const left=Math.max(0,timerEnd-Date.now());
+    if(left<=0){clearInterval(tickId);timerId=null;stopAudio();$('timerStatus').textContent='時間到，已停止播放';return}
+    const m=Math.floor(left/60000),s=Math.floor((left%60000)/1000);
+    $('timerStatus').textContent=`將於 ${m} 分 ${String(s).padStart(2,'0')} 秒後停止播放`;
+  }
+  tick();tickId=setInterval(tick,1000);timerId=tickId;
+});
+audio.addEventListener('playing',()=>{$('playBtn').textContent='Ⅱ';$('visual').classList.add('playing')});
+audio.addEventListener('pause',()=>{if(audio.src){$('playBtn').textContent='▶';$('visual').classList.remove('playing')}});
+audio.addEventListener('error',()=>{if(audio.src)setStatus('串流播放失敗：可能是網址不正確、格式不支援或電台限制外部播放。')});
+render();
+if(stations.length)selectStation(stations[0].id,false);
+</script>
+</body>
+</html>
